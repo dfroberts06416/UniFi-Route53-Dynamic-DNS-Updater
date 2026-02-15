@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Lambda function to update Route53 with UniFi external IP
+
+Parameters:
+  UniFiApiKey:
+    Type: String
+    NoEcho: true
+    Description: UniFi API Key
+  
+  HostedZoneId:
+    Type: String
+    Description: Route53 Hosted Zone ID
+  
+  RecordName:
+    Type: String
+    Description: DNS record name to update for WAN1 (e.g., home.example.com)
+  
+  RecordNameWan2:
+    Type: String
+    Default: ""
+    Description: DNS record name to update for WAN2 (optional, e.g., home-wan2.example.com)
+  
+  TTL:
+    Type: Number
+    Default: 300
+    Description: DNS record TTL in seconds
+  
+  ScheduleExpression:
+    Type: String
+    Default: "rate(5 minutes)"
+    Description: How often to check and update IP
+
+Resources:
+  UpdateDNSFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: UniFi-Route53-Updater
+      Runtime: python3.11
+      Handler: lambda_function.lambda_handler
+      Timeout: 30
+      Environment:
+        Variables:
+          UNIFI_API_KEY: !Ref UniFiApiKey
+          HOSTED_ZONE_ID: !Ref HostedZoneId
+          RECORD_NAME: !Ref RecordName
+          RECORD_NAME_WAN2: !Ref RecordNameWan2
+          TTL: !Ref TTL
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - route53:ChangeResourceRecordSets
+                - route53:GetChange
+              Resource:
+                - !Sub 'arn:aws:route53:::hostedzone/${HostedZoneId}'
+                - 'arn:aws:route53:::change/*'
+      Events:
+        ScheduledUpdate:
+          Type: Schedule
+          Properties:
+            Schedule: !Ref ScheduleExpression
+            Enabled: true
+
+Outputs:
+  FunctionArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt UpdateDNSFunction.Arn
+  
+  FunctionName:
+    Description: Lambda Function Name
+    Value: !Ref UpdateDNSFunction

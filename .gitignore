@@ -1,0 +1,58 @@
+# AWS SAM build artifacts
+.aws-sam/
+samconfig.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment variables
+.env
+.env.local
+
+# AWS credentials
+.aws/
+credentials
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test outputs
+response.json
+*.log
+
+# Sensitive data
+config.local.sh
+*-local.*
+*_local.*
+check_*.py
+test_dual_wan.py
+find_*.py
+deploy_update.*
+update_lambda_only.*
